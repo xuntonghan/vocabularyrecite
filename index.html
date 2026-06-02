@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabulary Trainer</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #dbeafe, #f0f9ff);
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+
+.card, .quiz-box {
+    background: white;
+    border-radius: 16px;
+    padding: 35px;
+    margin-top: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.word {
+    font-size: 42px;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+
+.meaning {
+    margin-top: 20px;
+    font-size: 24px;
+    color: #374151;
+    display: none;
+}
+
+button {
+    margin: 10px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    background: #2563eb;
+    color: white;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.option {
+    display: block;
+    width: 80%;
+    margin: 10px auto;
+}
+
+.progress, .score {
+    margin-top: 18px;
+    font-size: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📚 Vocabulary Trainer</h1>
+
+    <div class="card">
+        <div class="word" id="word"></div>
+        <div class="meaning" id="meaning"></div>
+
+        <button onclick="showMeaning()">显示中文</button>
+        <button onclick="nextWord()">下一个</button>
+        <button onclick="shuffleWords()">随机排序</button>
+
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="quiz-box">
+        <h2>🧠 单词测试</h2>
+        <div class="word" style="font-size:32px;" id="quizWord"></div>
+        <div id="options"></div>
+        <div class="score" id="score">当前得分：0</div>
+        <button onclick="generateQuiz()">下一题</button>
+    </div>
+</div>
+
+<script>
+const words = [
+["resign","辞职；顺从；使听从"],
+["inordinate","过度的；异常的"],
+["espouse","支持；拥护；娶"],
+["sire","父亲；雄性动物"],
+["ideological","意识形态的"],
+["unscathed","未受伤的；未受损害的"],
+["lament","哀悼；悲叹"],
+["compass","指南针；范围；达成"],
+["hierarchical","等级制度的"],
+["reverence","尊敬；敬畏"],
+["filial piety","孝道"],
+["maternal","母亲的；母性的"],
+["uninitiated","外行的；不了解内情的"],
+["kith and kin","亲友；亲戚朋友"],
+["arduous","艰巨的；费力的"],
+["trump","胜过；王牌"],
+["acquaint oneself with","熟悉；了解"],
+["turnover","营业额；人员流动；翻转"],
+["with regard to","关于；至于"],
+["distribution","分配；分布"],
+["bearer","携带者；持票人"],
+["turmoil","混乱；骚乱"],
+["stem from","源于；起源于"],
+["equivalent","等价的；相等物"],
+["syllable","音节"],
+["pal","朋友；伙伴"],
+["forge","锻造；伪造；建立"],
+["subtle","微妙的；细微的"],
+["herb","香草；药草"],
+["improvise","即兴创作；临时应对"],
+["curtail","缩减；削减"],
+["plump","丰满的；使鼓起"],
+["doughy","面团般的；苍白软弱的"],
+["stark","鲜明的；严酷的"],
+["accompaniment","伴奏；陪同物"],
+["crunchy","脆的"],
+["consensus","共识；一致意见"],
+["counterpart","对应的人/物"],
+["etiquette","礼仪；礼节"],
+["flourish","繁荣；茂盛；挥舞"],
+["delicacy","美味；佳肴；精致"],
+["specialty","特产；专长"],
+["accommodate","容纳；适应"],
+["palate","味觉；品味"],
+["stunning","惊艳的；令人震惊的"],
+["congeal","凝结；冻结"],
+["avant-garde","前卫的"],
+["thereof","其中；关于那"],
+["patron","赞助人；老顾客"],
+["altar","祭坛；圣坛"],
+["communal","公共的；集体的"],
+["flop","失败；扑通落下"],
+["heartily","衷心地；热情地"],
+["engrave","雕刻；铭记"],
+["ideograph","表意文字"],
+["prognostication","预言；预测"],
+["coarse","粗糙的；粗俗的"],
+["haughty","傲慢的"],
+["incise","切割；雕刻"],
+["decree","法令；命令"],
+["poise","沉着；平衡"],
+["chastise","责罚；严厉批评"],
+["awe","敬畏"],
+["stiff","僵硬的；困难的"],
+["bid sb to do sth","命令某人做某事"],
+["stubbornness","固执"],
+["fleeting","短暂的；转瞬即逝的"]
+];
+
+let current = 0;
+let score = 0;
+
+function updateCard() {
+    document.getElementById("word").innerText = words[current][0];
+    document.getElementById("meaning").innerText = words[current][1];
+    document.getElementById("meaning").style.display = "none";
+    document.getElementById("progress").innerText =
+        "进度：" + (current + 1) + " / " + words.length;
+}
+
+function showMeaning() {
+    document.getElementById("meaning").style.display = "block";
+}
+
+function nextWord() {
+    current = (current + 1) % words.length;
+    updateCard();
+}
+
+function shuffleWords() {
+    for (let i = words.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [words[i], words[j]] = [words[j], words[i]];
+    }
+    current = 0;
+    updateCard();
+}
+
+function generateQuiz() {
+    const idx = Math.floor(Math.random() * words.length);
+    const correct = words[idx];
+
+    document.getElementById("quizWord").innerText = correct[0];
+
+    let choices = [correct[1]];
+
+    while (choices.length < 4) {
+        let randomMeaning = words[Math.floor(Math.random() * words.length)][1];
+        if (!choices.includes(randomMeaning)) {
+            choices.push(randomMeaning);
+        }
+    }
+
+    choices.sort(() => Math.random() - 0.5);
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    choices.forEach(choice => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerText = choice;
+
+        btn.onclick = () => {
+            if (choice === correct[1]) {
+                score++;
+                alert("✅ 正确！");
+            } else {
+                alert("❌ 错误！正确答案是：" + correct[1]);
+            }
+
+            document.getElementById("score").innerText =
+                "当前得分：" + score;
+        };
+
+        optionsDiv.appendChild(btn);
+    });
+}
+
+updateCard();
+generateQuiz();
+</script>
+
+</body>
+</html>
